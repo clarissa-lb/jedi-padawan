@@ -16,22 +16,26 @@ export default function Home() {
         setIsLoading(true);
         setError(null);
 
-        // Obtener configuración de Bubble desde la API
-        const configResponse = await fetch('/api/bubble-config');
-        const config = await configResponse.json();
-        
-        if (!config.apiKey || !config.appId) {
-          setError('Configuración de Bubble no encontrada');
+        // Configuración de Bubble usando variables NEXT_PUBLIC_
+        const bubbleService = new BubbleApiService({
+          apiKey: process.env.NEXT_PUBLIC_BUBBLE_API_KEY || '',
+          appId: process.env.NEXT_PUBLIC_BUBBLE_APP_ID || '',
+          baseUrl: process.env.NEXT_PUBLIC_BUBBLE_BASE_URL || ''
+        });
+
+        // Verificar que las variables de entorno estén configuradas
+        if (!process.env.NEXT_PUBLIC_BUBBLE_API_KEY || !process.env.NEXT_PUBLIC_BUBBLE_APP_ID) {
+          console.error('Variables de entorno faltantes:', {
+            apiKey: process.env.NEXT_PUBLIC_BUBBLE_API_KEY ? 'Configurada' : 'Faltante',
+            appId: process.env.NEXT_PUBLIC_BUBBLE_APP_ID ? 'Configurada' : 'Faltante',
+            baseUrl: process.env.NEXT_PUBLIC_BUBBLE_BASE_URL ? 'Configurada' : 'Faltante'
+          });
+          setError('Variables de entorno de Bubble no configuradas');
           setIsLoading(false);
           return;
         }
 
-        // Configuración de Bubble
-        const bubbleService = new BubbleApiService({
-          apiKey: config.apiKey,
-          appId: config.appId,
-          baseUrl: config.baseUrl || ''
-        });
+        console.log('Variables de entorno configuradas correctamente');
 
         // Obtener empleados
         const employees: BubbleEmployee[] = await bubbleService.fetchEmployees();
