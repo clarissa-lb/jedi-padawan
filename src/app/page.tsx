@@ -16,11 +16,21 @@ export default function Home() {
         setIsLoading(true);
         setError(null);
 
+        // Obtener configuración de Bubble desde la API
+        const configResponse = await fetch('/api/bubble-config');
+        const config = await configResponse.json();
+        
+        if (!config.apiKey || !config.appId) {
+          setError('Configuración de Bubble no encontrada');
+          setIsLoading(false);
+          return;
+        }
+
         // Configuración de Bubble
         const bubbleService = new BubbleApiService({
-          apiKey: process.env.BUBBLE_API_KEY || ''  ,
-          appId: process.env.BUBBLE_APP_ID || '',
-          baseUrl: process.env.BUBBLE_BASE_URL || ''
+          apiKey: config.apiKey,
+          appId: config.appId,
+          baseUrl: config.baseUrl || ''
         });
 
         // Obtener empleados
